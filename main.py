@@ -1,15 +1,12 @@
-from flask import Flask, request
+from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 app = Flask(__name__)
 
-LINE_CHANNEL_ACCESS_TOKEN = "ここにチャンネルアクセストークン"
-LINE_CHANNEL_SECRET = "ここにチャンネルシークレット"
-
-line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
-handler = WebhookHandler(LINE_CHANNEL_SECRET)
+line_bot_api = LineBotApi('【CHANNEL_ACCESS_TOKEN】')
+handler = WebhookHandler('【CHANNEL_SECRET】')
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -19,17 +16,17 @@ def callback():
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        return "Invalid signature", 400
+        abort(400)
 
     return 'OK'
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    user_text = event.message.text
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text="返信テスト成功！")
+        TextSendMessage(text=user_text)
     )
 
 if __name__ == "__main__":
-    app.run()
-
+    app.run(port=5000)
